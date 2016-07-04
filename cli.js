@@ -28,6 +28,54 @@ var PATH = require('path'),
 //     return findLevel(PATH.dirname(path), types, startPath);
 // };
 
+var action = function(opts, args) {
+    var options = {};
+    args.entities = args.entities || [];
+
+    args.entities.forEach(function(file) {
+        braceExpansion(file).forEach(function(file) {
+            var splitted = file.split('.'),
+                entity = naming.parse(splitted.shift()),
+                tech = splitted.join('.'),
+                techs = [];
+
+            if (tech) {
+                techs = [tech];
+            } else if (opts.addTech) {
+                techs = opts.addTech;
+            }
+
+            create(entity, opts.level, techs, options);
+        });
+    });
+
+    var techs = opts.addTech || [];
+    if (opts.forceTech) {
+        options.onlyTech = opts.forceTech;
+    }
+
+    if (!opts.block) {
+        return reject('Block name required');
+    }
+
+    var result = create([{
+        block: opts.block[0],
+        elem: opts.elem && opts.elem[0],
+        modName: opts.mod && opts.mod[0],
+        modVal: opts.val && opts.val[0]
+    }], opts.level, techs, options);
+
+    result.then(resolve, reject);
+};
+
+var resolve = function() {
+    console.log('Created');
+};
+
+var reject = function(err) {
+    console.log('Not created:', err);
+};
+
 module.exports = function() {
     // var def = findLevel(process.cwd()),
     var def = process.cwd(),
@@ -109,43 +157,6 @@ module.exports = function() {
         //         process.chdir(opts.dir);
         //     })
         //     .end()
-        .act(function(opts, args) {
-            var options = {};
-            if (args.entities) {
-                args.entities.forEach(function(file) {
-                    braceExpansion(file).forEach(function(file) {
-                        var splitted = file.split('.'),
-                            entity = naming.parse(splitted.shift()),
-                            tech = splitted.join('.'),
-                            techs = [];
-
-                            if (tech) {
-                                techs = [tech];
-                            } else if (opts.addTech) {
-                                techs = opts.addTech;
-                            }
-
-// console.log('entity', entity, 'splitted', splitted, 'techs', techs);
-                        create(entity, opts.level, techs, options);
-                    });
-                });
-                return;
-            }
-
-            var techs = opts.addTech || [];
-            if (opts.forceTech) {
-                options.onlyTech = opts.forceTech;
-            }
-
-            opts.block && create([{
-                block: opts.block[0],
-                elem: opts.elem && opts.elem[0],
-                modName: opts.mod && opts.mod[0],
-                modVal: opts.val && opts.val[0]
-            }], opts.level, techs, options);
-
-            // console.log('opts', opts, 'args', args);
-            // TODO: handle errors
-        })
+        .act(action)
         .end();
 };
