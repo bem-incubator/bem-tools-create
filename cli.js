@@ -65,11 +65,7 @@ var action = function(opts, args) {
         modVal: opts.val && opts.val[0]
     }], opts.level, techs, options);
 
-    result.then(resolve, reject);
-};
-
-var resolve = function() {
-    console.log('Created');
+    result.catch(reject);
 };
 
 var reject = function(err) {
