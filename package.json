@@ -1,6 +1,6 @@
 {
   "name": "bem-tools-create",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "bem create command",
   "main": "index.js",
   "scripts": {
@@ -16,20 +16,17 @@
   "author": "",
   "license": "MPL-2.0",
   "dependencies": {
-    "bem-config": "^2.0.1",
-    "bem-fs-scheme": "bem-contrib/bem-fs-scheme#26e3289ddfac29acae2b2406801eca6d7772bc78",
+    "bem-config": "^3.1.0",
+    "bem-fs-scheme": "^1.0.0",
     "bem-naming": "^1.0.1",
-    "brace-expansion": "^1.1.2",
-    "lodash.get": "^4.2.0",
+    "brace-expansion": "^1.1.6",
     "mkdirp": "^0.5.1",
-    "os-homedir": "^1.0.1",
     "pinkie-promise": "^2.0.1",
     "uniq": "^1.0.1"
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "mkdirp": "^0.5.1",
-    "mocha": "^2.4.5",
-    "rimraf": "^2.5.2"
+    "mocha": "^3.1.0",
+    "rimraf": "^2.5.4"
   }
 }
