@@ -121,11 +121,16 @@ module.exports = function() {
                 return create(args.entities, opts.level, techs, options).then(noOp);
             };
 
-            opts.block && create([{
-                block: opts.block[0],
-                elem: opts.elem && opts.elem[0],
-                modName: opts.mod && opts.mod[0],
-                modVal: opts.val && opts.val[0]
+            var block = opts.block && opts.block[0],
+                elem = opts.elem && opts.elem[0],
+                modName = opts.mod && opts.mod[0],
+                modVal = opts.val && opts.val[0];
+
+            (block || elem || modName) && create([{
+                block: block,
+                elem: elem,
+                modName: modName,
+                modVal: modVal
             }], opts.level, techs, options).then(noOp);
         })
         .end();
