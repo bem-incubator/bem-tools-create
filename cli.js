@@ -81,7 +81,7 @@ module.exports = function() {
                 block: opts.block[0],
                 elem: opts.elem && opts.elem[0],
                 modName: opts.mod && opts.mod[0],
-                modVal: opts.val && opts.val[0]
+                modVal: opts.val ? opts.val[0] : Boolean(opts.mod),
             }], opts.level, techs, options).then(noOp);
         })
         .end();
