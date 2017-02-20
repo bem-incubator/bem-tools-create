@@ -9,7 +9,6 @@ module.exports = {
     extends: 'pedant',
     rules: {
         'no-unused-expressions': 'off',
-        'no-console': 'error',
         semi: ['error', 'always'],
         curly: ['error', 'multi-line'],
         'space-infix-ops': ['error'],
