@@ -2,7 +2,7 @@
 
 var create = require('./');
 
-function noOp() {};
+function noOp() {}
 
 module.exports = function() {
     this
@@ -75,7 +75,7 @@ module.exports = function() {
 
             if (args.entities) {
                 return create(args.entities, opts.level, techs, options).then(noOp);
-            };
+            }
 
             opts.block && create([{
                 block: opts.block[0],

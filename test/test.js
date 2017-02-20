@@ -4,9 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const mkdirp = require('mkdirp');
 const rimraf = require('rimraf');
-const expect = require('chai').expect;
 const create = require('..');
-const bemFsScheme = require('bem-fs-scheme');
 const naming = require('bem-naming');
 const EOL = require('os').EOL;
 
@@ -21,9 +19,10 @@ const templates = {
             '.' + className + ' {',
             '    ',
             '}',
-        ''].join(EOL);
+            ''
+        ].join(EOL);
     }
-}
+};
 
 function testEntityHelper(entities, levels, techs, options, expected) {
     return create(entities, levels, techs, options).then(created => {
@@ -41,7 +40,7 @@ function testEntityHelper(entities, levels, techs, options, expected) {
 
             try {
                 actualContent = fs.readFileSync(file.name, 'utf8');
-            } catch(err) {
+            } catch (err) {
                 throw new Error(`${file.name} was not created`);
             }
 
@@ -143,7 +142,7 @@ describe('bem-tools-create', () => {
 
                 ['level1', 'level2'].forEach(function(lvl) {
                     const level = path.join(tmpDir, lvl);
-                    opts.defaults.levels[level] = { default: true };
+                    opts.defaults.levels[level] = { 'default': true };
                 });
 
                 return testEntityHelper([{ block: 'b' }], null, ['css'], opts, [
@@ -187,7 +186,7 @@ describe('bem-tools-create', () => {
                     {
                         name: path.join(tmpDir, 'l2', 'b__e1_m1_v1.css'),
                         content: templates.css(entity)
-                    },
+                    }
                 ]);
             });
 
@@ -200,7 +199,7 @@ describe('bem-tools-create', () => {
 
                 ['level1', 'level2'].forEach(function(lvl) {
                     const level = path.join(tmpDir, lvl);
-                    opts.defaults.levels[level] = { default: lvl === 'level2' };
+                    opts.defaults.levels[level] = { 'default': lvl === 'level2' };
                 });
 
                 const fakeCwd = path.join(tmpDir, 'level1', 'b1', '__e1');
@@ -224,7 +223,7 @@ describe('bem-tools-create', () => {
 
                 ['level1', 'level2'].forEach(function(lvl) {
                     const level = path.join(tmpDir, lvl);
-                    opts.defaults.levels[level] = { default: true };
+                    opts.defaults.levels[level] = { 'default': true };
                 });
 
                 const fakeCwd = path.join(tmpDir, 'some-folder', 'cwd');
@@ -252,7 +251,7 @@ describe('bem-tools-create', () => {
 
                 ['level1', 'level2'].forEach(function(lvl) {
                     const level = path.join(tmpDir, lvl);
-                    opts.defaults.levels[level] = { default: lvl === 'level1' };
+                    opts.defaults.levels[level] = { 'default': lvl === 'level1' };
                 });
 
                 const fakeCwd = path.join(tmpDir, 'some-folder', 'cwd');
@@ -307,7 +306,7 @@ describe('bem-tools-create', () => {
                     };
 
                     const level = path.join(tmpDir, 'level1');
-                    opts.defaults.levels[level] = { default: true };
+                    opts.defaults.levels[level] = { 'default': true };
 
                     createLevels[level] = {
                         techs: ['create-level-tech1']
@@ -341,7 +340,7 @@ describe('bem-tools-create', () => {
                     };
 
                     const level = path.join(tmpDir, 'level1');
-                    opts.defaults.levels[level] = { default: true };
+                    opts.defaults.levels[level] = { 'default': true };
 
                     createLevels[level] = {
                         templates: { css: path.join(__dirname, 'tech-templates', 'css2') }
@@ -351,7 +350,7 @@ describe('bem-tools-create', () => {
                         {
                             name: path.join(level, 'b', 'b.css'),
                             content: '.b {\n}\n'
-                        },
+                        }
                     ]);
                 });
             });
@@ -473,7 +472,7 @@ describe('bem-tools-create', () => {
                     },
                     fsRoot: tmpDir,
                     fsHome: tmpDir
-                }
+                };
 
                 return testEntityHelper([{ block: 'b' }], [tmpDir], ['css'], opts, [{
                     name: path.join(tmpDir, 'b', 'b.css'),
@@ -498,7 +497,7 @@ describe('bem-tools-create', () => {
                     },
                     fsRoot: tmpDir,
                     fsHome: tmpDir
-                }
+                };
 
                 return testEntityHelper([{ block: 'b' }], [tmpDir], ['bemtree.js'], opts, [{
                     name: path.join(tmpDir, 'b', 'b.bemtree.js'),
@@ -594,7 +593,7 @@ describe('bem-tools-create', () => {
                     { name: path.join(tmpDir, 'b1', '__e1', '_m1', 'b1__e1_m1_v1.t1') }
                 ]);
             });
-        })
+        });
 
         describe('levels from string', () => {
             it('should get level from string', () => {
@@ -612,7 +611,7 @@ describe('bem-tools-create', () => {
 
                 ['level1', 'level2'].forEach(function(lvl) {
                     const level = path.join(tmpDir, lvl);
-                    opts.defaults.levels[level] = { default: lvl === 'level1' };
+                    opts.defaults.levels[level] = { 'default': lvl === 'level1' };
                 });
 
                 const fakeCwd = path.join(tmpDir, 'some-folder', 'cwd');
