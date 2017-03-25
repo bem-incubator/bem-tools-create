@@ -121,12 +121,6 @@ bem create my-block__elem
 или
 
 ```sh
-bem create my-block -e elem
-```
-
-или
-
-```sh
 bem create -b my-block -e elem
 ```
 
@@ -166,13 +160,6 @@ bem create my-block_mod_val
 или
 
 ```sh
-bem create my-block -m mod
-bem create my-block -m mod -v val
-```
-
-или
-
-```sh
 bem create -b my-block -m mod
 bem create -b my-block -m mod -v val
 ```
@@ -188,13 +175,6 @@ bem create -b my-block -m mod -v val
 ```sh
 bem create my-block__elem_mod
 bem create my-block__elem_mod_val
-```
-
-или
-
-```sh
-bem create my-block__elem -m mod
-bem create my-block__elem -m mod -v val
 ```
 
 или
@@ -257,8 +237,6 @@ cat source_file.css | bem create -b bl1 -T css -c
 ```
 
 При этом **все создаваемые командой файлы** (например, файлы разных технологий создаваемых одновременно или блоки разных уровней по умолчанию) получат указанное содержимое. По этой причине полезно использовать эту опцию совместно с `-T` и явным указанием уровня.
-
-### TODO: есть ещё другие параметры, их надо или описать, или выкосить.
 
 ## JavaScript API
 
