@@ -8,6 +8,7 @@ const create = require('..');
 const naming = require('@bem/naming');
 const EOL = require('os').EOL;
 const assert = require('assert');
+const stream = require('stream');
 
 const tmpDir = path.join(__dirname, 'tmp');
 const initialCwd = process.cwd();
@@ -55,7 +56,6 @@ function testEntityHelper(entities, levels, techs, options, expected) {
             throw new Error(`${created} should not be created but it was`);
         }
     });
-
 }
 
 describe('bem-tools-create', () => {
@@ -727,5 +727,58 @@ describe('bem-tools-create', () => {
         });
 
         // modVal if cwd is inside mod
+    });
+
+    describe('command line arguments support', () => {
+        it('exclude tech', () => {
+            const excludedTechs = ['css', 'js'];
+            return testEntityHelper([{ block: 'b' }], [tmpDir], ['css', 'js', 'deps.js'],
+                { fsRoot: tmpDir, fsHome: tmpDir, excludeTech: excludedTechs }, [{
+                    name: path.join(tmpDir, 'b', 'b.deps.js'),
+                    content: ['({', '    shouldDeps: [', '        ', '    ]', '})', ''].join(EOL)
+                }]
+            );
+        });
+
+        it('custom content', () => {
+            const content = 'Some testing content';
+            return testEntityHelper([{ block: 'b' }], [tmpDir], ['css'],
+                { fsRoot: tmpDir, fsHome: tmpDir, fileContent: content }, [{
+                    name: path.join(tmpDir, 'b', 'b.css'),
+                    content: content
+                }]
+            );
+        });
+
+        it('force rewrite', () => {
+            const content = 'Some testing content';
+            // run first time
+            return testEntityHelper([{ block: 'b' }], [tmpDir], ['css'], { fsRoot: tmpDir, fsHome: tmpDir }, [{
+                name: path.join(tmpDir, 'b', 'b.css'),
+                content: templates.css('b')
+            }])
+                // run second time with force and another content
+                .then(() => testEntityHelper([{ block: 'b' }], [tmpDir], ['css'],
+                    { fsRoot: tmpDir, fsHome: tmpDir, fileContent: content, forceRewrite: true }, [{
+                        name: path.join(tmpDir, 'b', 'b.css'),
+                        content: content
+                    }])
+                );
+        });
+
+        it('custom content with pipe', () => {
+            const content = 'Some piped testing content';
+            const srcStream = new stream.Readable();
+            srcStream.push(content);
+            srcStream.push(null);
+
+            return testEntityHelper([{ block: 'b' }], [tmpDir], ['css'],
+                { fsRoot: tmpDir, fsHome: tmpDir, fileContent: srcStream }, [{
+                    name: path.join(tmpDir, 'b', 'b.css'),
+                    content: content
+                }]
+            );
+        });
+
     });
 });

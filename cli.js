@@ -52,11 +52,6 @@ module.exports = function() {
             .arr()
             .end()
         .opt()
-            .name('contentFile').short('cf').long('content-file')
-            .title('path to the template to use as a content of created file')
-            .arr()
-            .end()
-        .opt()
             .name('force').short('f').long('force')
             .title('force files creation')
             .flag()
@@ -75,6 +70,15 @@ module.exports = function() {
 
             if (opts.noTech) {
                 options.excludeTech = opts.noTech;
+            }
+
+            if (opts.force) {
+                options.forceRewrite = opts.force;
+            }
+
+            if (opts.content) {
+                // if used "-c" without value use stdin as content source
+                options.fileContent = (opts.content[0] !== undefined) ? opts.content.join() : require('process').stdin;
             }
 
             if (args.entities) {
