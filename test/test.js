@@ -5,8 +5,9 @@ const path = require('path');
 const mkdirp = require('mkdirp');
 const rimraf = require('rimraf');
 const create = require('..');
-const naming = require('bem-naming');
+const naming = require('@bem/naming');
 const EOL = require('os').EOL;
+const assert = require('assert');
 
 const tmpDir = path.join(__dirname, 'tmp');
 const initialCwd = process.cwd();
@@ -29,9 +30,10 @@ function testEntityHelper(entities, levels, techs, options, expected) {
         expected.forEach(file => {
             let actualContent;
             const createdIndex = created.indexOf(file.name);
+            const relativeFileName = path.relative(initialCwd, file.name);
 
             if (createdIndex === -1) {
-                throw new Error(`There is no ${file.name} in result returned`);
+                throw new Error(`There is no ${relativeFileName} in result returned`);
             }
 
             if (typeof file.content === 'undefined') {
@@ -41,12 +43,10 @@ function testEntityHelper(entities, levels, techs, options, expected) {
             try {
                 actualContent = fs.readFileSync(file.name, 'utf8');
             } catch (err) {
-                throw new Error(`${file.name} was not created`);
+                throw new Error(`${relativeFileName} was not created`);
             }
 
-            if (actualContent !== file.content) {
-                throw new Error(`${file.name} content is not correct`);
-            }
+            assert.equal(actualContent, file.content, `${relativeFileName} content is not correct`);
 
             created.splice(createdIndex, 1);
         });
@@ -113,8 +113,10 @@ describe('bem-tools-create', () => {
         it('should create entities with naming from config', () => {
             const entity = { block: 'b', elem: 'e1', modName: 'm1', modVal: 'v1' };
             const namingScheme = {
-                elem: '-',
-                mod: { name: '--', val: '_' }
+                delims: {
+                    elem: '-',
+                    mod: { name: '--', val: '_' }
+                }
             };
 
             return testEntityHelper([entity], [tmpDir], ['css'], { defaults: { naming: namingScheme } }, [{
@@ -161,8 +163,10 @@ describe('bem-tools-create', () => {
                 const levels = [path.join(tmpDir, 'l1'), path.join(tmpDir, 'l2')];
                 const entity = { block: 'b', elem: 'e1', modName: 'm1', modVal: 'v1' };
                 const namingScheme = {
-                    elem: '-',
-                    mod: { name: '--', val: '_' }
+                    delims: {
+                        elem: '-',
+                        mod: { name: '--', val: '_' }
+                    }
                 };
                 const opts = {
                     defaults: {

@@ -339,8 +339,10 @@ module.exports = {
 
             // Смотри https://ru.bem.info/toolbox/sdk/bem-naming/#Собственный-стиль
             naming: {
-                elem: '-',
-                mod: { name: '--', val: '_' },
+                delims: {
+                    elem: '-',
+                    mod: { name: '--', val: '_' }
+                },
                 wordPattern: '[a-zA-Z0-9]+'
             }
         }
@@ -426,8 +428,10 @@ module.exports = {
 
             // Смотри https://ru.bem.info/toolbox/sdk/bem-naming/#Собственный-стиль
             naming: {
-                elem: '-',
-                mod: { name: '--', val: '_' },
+                delims: {
+                    elem: '-',
+                    mod: { name: '--', val: '_' }
+                },
                 wordPattern: '[a-zA-Z0-9]+'
             }
         }
