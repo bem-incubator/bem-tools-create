@@ -89,8 +89,6 @@ bem create my-block -T css -T js
 
 #### Создание блока без указанных технологий
 
-TODO: не работает
-
 ```sh
 bem create my-block.js -n css
 ```

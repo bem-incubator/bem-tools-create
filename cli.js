@@ -73,6 +73,10 @@ module.exports = function() {
                 options.onlyTech = opts.forceTech;
             }
 
+            if (opts.noTech) {
+                options.excludeTech = opts.noTech;
+            }
+
             if (args.entities) {
                 return create(args.entities, opts.level, techs, options).then(noOp);
             }
