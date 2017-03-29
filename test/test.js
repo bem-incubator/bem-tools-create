@@ -357,6 +357,79 @@ describe('bem-tools-create', () => {
                         }
                     ]);
                 });
+
+                it('should support glob with absolute level path', () => {
+                    const levels = {};
+                    const createPluginLevels = {};
+                    const opts = {
+                        defaults: {
+                            levels,
+                            modules: {
+                                'bem-tools': {
+                                    plugins: {
+                                        create: {
+                                            techs: ['tech1', 'tech2'],
+                                            levels: createPluginLevels
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        fsRoot: tmpDir,
+                        fsHome: tmpDir
+                    };
+
+                    const level = path.join(tmpDir, '*.blocks');
+                    levels[level] = { 'default': true };
+                    createPluginLevels[level] = { techs: ['tech4', 'tech3'] };
+
+                    mkdirp.sync(path.join(tmpDir, 'common.blocks'));
+                    mkdirp.sync(path.join(tmpDir, 'desktop.blocks'));
+
+                    return testEntityHelper([{ block: 'b' }], null, null, opts, [
+                        { name: path.join(tmpDir, 'common.blocks', 'b', 'b.tech3') },
+                        { name: path.join(tmpDir, 'common.blocks', 'b', 'b.tech4') },
+                        { name: path.join(tmpDir, 'desktop.blocks', 'b', 'b.tech3') },
+                        { name: path.join(tmpDir, 'desktop.blocks', 'b', 'b.tech4') }
+                    ]);
+                });
+
+                it('should support glob resolution for levels', () => {
+                    const levels = {};
+                    const createPluginLevels = {};
+                    const opts = {
+                        defaults: {
+                            levels,
+                            modules: {
+                                'bem-tools': {
+                                    plugins: {
+                                        create: {
+                                            techs: ['tech1', 'tech2'],
+                                            levels: createPluginLevels
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        fsRoot: tmpDir,
+                        fsHome: tmpDir
+                    };
+
+                    const level = '*.blocks';
+                    levels[level] = { 'default': true };
+                    createPluginLevels[level] = { techs: ['tech4', 'tech3'] };
+
+                    mkdirp.sync(path.join(tmpDir, 'common.blocks'));
+                    mkdirp.sync(path.join(tmpDir, 'desktop.blocks'));
+                    process.chdir(tmpDir);
+
+                    return testEntityHelper([{ block: 'b' }], null, null, opts, [
+                        { name: path.join(tmpDir, 'common.blocks', 'b', 'b.tech3') },
+                        { name: path.join(tmpDir, 'common.blocks', 'b', 'b.tech4') },
+                        { name: path.join(tmpDir, 'desktop.blocks', 'b', 'b.tech3') },
+                        { name: path.join(tmpDir, 'desktop.blocks', 'b', 'b.tech4') }
+                    ]);
+                });
             });
         });
 
