@@ -85,8 +85,8 @@ module.exports = function() {
                 return create(args.entities, opts.level, techs, options).then(noOp);
             }
 
-            opts.block && create([{
-                block: opts.block[0],
+            (opts.block || opts.elem || opts.mod) && create([{
+                block: opts.block && opts.block[0],
                 elem: opts.elem && opts.elem[0],
                 modName: opts.mod && opts.mod[0],
                 modVal: opts.val ? opts.val[0] : Boolean(opts.mod)

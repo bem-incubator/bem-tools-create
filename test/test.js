@@ -62,8 +62,8 @@ describe('bem-tools-create', () => {
     beforeEach(() => mkdirp.sync(tmpDir));
 
     afterEach(() => {
-        rimraf.sync(tmpDir);
         process.chdir(initialCwd);
+        rimraf.sync(tmpDir);
     });
 
     describe('default scheme and default naming', () => {
@@ -714,19 +714,159 @@ describe('bem-tools-create', () => {
     });
 
     describe('respect context', () => {
-        it.skip('should get block from context', () => {
+        function runInFakeDir(dir) {
+            const fakeCwd = path.join(tmpDir, dir);
+            mkdirp.sync(fakeCwd);
+            process.chdir(fakeCwd);
+        }
+        describe('with string entities', () => {
+            it('should create elem in block context', () => {
+                runInFakeDir('bl1');
 
+                return testEntityHelper('__e1', tmpDir, ['t1'], {}, [
+                    { name: path.join(tmpDir, 'bl1', '__e1', 'bl1__e1.t1') }
+                ]);
+            });
+
+            it('should create block in level from block context', () => {
+                runInFakeDir('bl1');
+
+                return testEntityHelper('bl2__e1', tmpDir, ['t1'], {}, [
+                    { name: path.join(tmpDir, 'bl2', '__e1', 'bl2__e1.t1') }
+                ]);
+            });
+
+            it('should create block in level from any directory in block context', () => {
+                runInFakeDir('bl1/someDir');
+
+                return testEntityHelper('bl3__e1', tmpDir, ['t1'], {}, [
+                    { name: path.join(tmpDir, 'bl3', '__e1', 'bl3__e1.t1') }
+                ]);
+            });
+
+            it('should create mod in block context', () => {
+                runInFakeDir('bl1');
+
+                return testEntityHelper('_mod1', tmpDir, ['t1'], {}, [
+                    { name: path.join(tmpDir, 'bl1', '_mod1', 'bl1_mod1.t1') }
+                ]);
+            });
+
+            it('should create mod with value in block context', () => {
+                runInFakeDir('bl1');
+
+                return testEntityHelper('_mod1_val1', tmpDir, ['t1'], {}, [
+                    { name: path.join(tmpDir, 'bl1', '_mod1', 'bl1_mod1_val1.t1') }
+                ]);
+            });
+
+            it('should create mod for block from mod context', () => {
+                runInFakeDir(path.join('bl1', '_mod1'));
+
+                return testEntityHelper('_mod2', tmpDir, ['t1'], {}, [
+                    { name: path.join(tmpDir, 'bl1', '_mod2', 'bl1_mod2.t1') }
+                ]);
+            });
+
+            it('should create mod with value for block from mod context', () => {
+                runInFakeDir(path.join('bl1', '_mod1'));
+
+                return testEntityHelper('_mod2_val1', tmpDir, ['t1'], {}, [
+                    { name: path.join(tmpDir, 'bl1', '_mod2', 'bl1_mod2_val1.t1') }
+                ]);
+            });
+
+            it('should create mod for elem from elem context', () => {
+                runInFakeDir(path.join('bl1', '__elem1'));
+
+                return testEntityHelper('_mod2_val1', tmpDir, ['t1'], {}, [
+                    { name: path.join(tmpDir, 'bl1', '__elem1', '_mod2', 'bl1__elem1_mod2_val1.t1') }
+                ]);
+            });
+
+            it('should create elem with mod in block from elem context', () => {
+                runInFakeDir(path.join('bl1', '__elem1'));
+
+                return testEntityHelper('__elem2_mod1_val1', tmpDir, ['t1'], {}, [
+                    { name: path.join(tmpDir, 'bl1', '__elem2', '_mod1', 'bl1__elem2_mod1_val1.t1') }
+                ]);
+            });
         });
 
-        it.skip('should get block and elem from context', () => {
+        describe('with arguments entities', () => {
+            it('should create elem in block context', () => {
+                runInFakeDir('bl1');
 
+                return testEntityHelper({ elem: 'e1' }, tmpDir, ['t1'], {}, [
+                    { name: path.join(tmpDir, 'bl1', '__e1', 'bl1__e1.t1') }
+                ]);
+            });
+
+            it('should create block in level from block context', () => {
+                runInFakeDir('bl1');
+
+                return testEntityHelper({ block: 'bl2', elem: 'e1' }, tmpDir, ['t1'], {}, [
+                    { name: path.join(tmpDir, 'bl2', '__e1', 'bl2__e1.t1') }
+                ]);
+            });
+
+            it('should create block in level from any directory in block context', () => {
+                runInFakeDir('bl1/someDir');
+
+                return testEntityHelper({ block: 'bl3', elem: 'e1' }, tmpDir, ['t1'], {}, [
+                    { name: path.join(tmpDir, 'bl3', '__e1', 'bl3__e1.t1') }
+                ]);
+            });
+
+            it('should create mod in block context', () => {
+                runInFakeDir('bl1');
+
+                return testEntityHelper({ modName: 'mod1' }, tmpDir, ['t1'], {}, [
+                    { name: path.join(tmpDir, 'bl1', '_mod1', 'bl1_mod1.t1') }
+                ]);
+            });
+
+            it('should create mod with value in block context', () => {
+                runInFakeDir('bl1');
+
+                return testEntityHelper({ modName: 'mod1', modVal: 'val1' }, tmpDir, ['t1'], {}, [
+                    { name: path.join(tmpDir, 'bl1', '_mod1', 'bl1_mod1_val1.t1') }
+                ]);
+            });
+
+            it('should create mod for block from mod context', () => {
+                runInFakeDir(path.join('bl1', '_mod1'));
+
+                return testEntityHelper({ modName: 'mod2' }, tmpDir, ['t1'], {}, [
+                    { name: path.join(tmpDir, 'bl1', '_mod2', 'bl1_mod2.t1') }
+                ]);
+            });
+
+            it('should create mod with value for block from mod context', () => {
+                runInFakeDir(path.join('bl1', '_mod1'));
+
+                return testEntityHelper({ modName: 'mod2', modVal: 'val1' }, tmpDir, ['t1'], {}, [
+                    { name: path.join(tmpDir, 'bl1', '_mod2', 'bl1_mod2_val1.t1') }
+                ]);
+            });
+
+            it('should create mod for elem from elem context', () => {
+                runInFakeDir(path.join('bl1', '__elem1'));
+
+                return testEntityHelper({ modName: 'mod2', modVal: 'val1' }, tmpDir, ['t1'], {}, [
+                    { name: path.join(tmpDir, 'bl1', '__elem1', '_mod2', 'bl1__elem1_mod2_val1.t1') }
+                ]);
+            });
+
+            it('should create elem with mod in block from elem context', () => {
+                runInFakeDir(path.join('bl1', '__elem1'));
+
+                return testEntityHelper({ elem: 'elem2', modName: 'mod1', modVal: 'val1' },  tmpDir, ['t1'], {}, [
+                    { name: path.join(tmpDir, 'bl1', '__elem2', '_mod1', 'bl1__elem2_mod1_val1.t1') }
+                ]);
+            });
         });
 
-        it.skip('should get modName from context', () => {
-
-        });
-
-        // modVal if cwd is inside mod
     });
 
     describe('command line arguments support', () => {
