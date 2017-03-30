@@ -283,22 +283,22 @@ create(
         { block: 'b1', elem: 'e2', modName: 'elemMod', modVal: true },
         { block: 'b1', modName: 'm1', modVal: 'v1' }
     ],
-    [ 'level1', 'level2' ],
-    [ 'css', 'js', 'bemhtml.js' ]
+    ['level1', 'level2'],
+    ['css', 'js', 'bemhtml.js']
 );
 
 // Создаёт `b1` только в технологии `jsx` на уровне `level1`, игнорируя переданные
 // в третьем параметры технологии и технологии по умолчанию
 create(
-    [ 'b1' ],
-    [ 'level1'],
-    [ 'css', 'js', 'bemhtml.js' ],
+    ['b1'],
+    ['level1'],
+    ['css', 'js', 'bemhtml.js'],
     {
         onlyTech: ['jsx'],
 
-        excludeTech: [ 'js' ],
+        excludeTech: ['js'],
 
-        fileContent: [ 'Some file content' ]
+        fileContent: ['Some file content']
 
         forceRewrite: true
 

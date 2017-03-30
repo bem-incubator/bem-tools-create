@@ -78,7 +78,7 @@ module.exports = function() {
 
             if (opts.content) {
                 // if used "-c" without value use stdin as content source
-                options.fileContent = (opts.content[0] !== undefined) ? opts.content.join() : require('process').stdin;
+                options.fileContent = (opts.content[0] !== undefined) ? opts.content.join() : process.stdin;
             }
 
             if (args.entities) {

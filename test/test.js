@@ -730,27 +730,26 @@ describe('bem-tools-create', () => {
     });
 
     describe('command line arguments support', () => {
-        it('exclude tech', () => {
+        it('should exclude tech', () => {
             const excludedTechs = ['css', 'js'];
-            return testEntityHelper([{ block: 'b' }], [tmpDir], ['css', 'js', 'deps.js'],
-                { fsRoot: tmpDir, fsHome: tmpDir, excludeTech: excludedTechs }, [{
-                    name: path.join(tmpDir, 'b', 'b.deps.js'),
-                    content: ['({', '    shouldDeps: [', '        ', '    ]', '})', ''].join(EOL)
+            return testEntityHelper([{ block: 'b' }], [tmpDir], ['css', 'js', 't1'],
+                { excludeTech: excludedTechs }, [{
+                    name: path.join(tmpDir, 'b', 'b.t1')
                 }]
             );
         });
 
-        it('custom content', () => {
+        it('should support custom content', () => {
             const content = 'Some testing content';
             return testEntityHelper([{ block: 'b' }], [tmpDir], ['css'],
-                { fsRoot: tmpDir, fsHome: tmpDir, fileContent: content }, [{
+                { fileContent: content }, [{
                     name: path.join(tmpDir, 'b', 'b.css'),
                     content: content
                 }]
             );
         });
 
-        it('force rewrite', () => {
+        it('should force rewrite', () => {
             const content = 'Some testing content';
             // run first time
             return testEntityHelper([{ block: 'b' }], [tmpDir], ['css'], { fsRoot: tmpDir, fsHome: tmpDir }, [{
@@ -759,21 +758,21 @@ describe('bem-tools-create', () => {
             }])
                 // run second time with force and another content
                 .then(() => testEntityHelper([{ block: 'b' }], [tmpDir], ['css'],
-                    { fsRoot: tmpDir, fsHome: tmpDir, fileContent: content, forceRewrite: true }, [{
+                    { fileContent: content, forceRewrite: true }, [{
                         name: path.join(tmpDir, 'b', 'b.css'),
                         content: content
                     }])
                 );
         });
 
-        it('custom content with pipe', () => {
+        it('should support custom content with pipe', () => {
             const content = 'Some piped testing content';
             const srcStream = new stream.Readable();
             srcStream.push(content);
             srcStream.push(null);
 
             return testEntityHelper([{ block: 'b' }], [tmpDir], ['css'],
-                { fsRoot: tmpDir, fsHome: tmpDir, fileContent: srcStream }, [{
+                { fileContent: srcStream }, [{
                     name: path.join(tmpDir, 'b', 'b.css'),
                     content: content
                 }]
