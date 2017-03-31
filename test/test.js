@@ -323,6 +323,40 @@ describe('bem-tools-create', () => {
                     ]);
                 });
 
+                it('should get default level from plugin config', () => {
+                    const createLevels = {};
+                    const opts = {
+                        defaults: {
+                            levels: {},
+                            modules: {
+                                'bem-tools': {
+                                    plugins: {
+                                        create: {
+                                            techs: ['common-create-tech1', 'common-create-tech2'],
+                                            levels: createLevels
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        fsRoot: tmpDir,
+                        fsHome: tmpDir
+                    };
+
+                    const level = path.join(tmpDir, 'level1');
+
+                    createLevels[level] = {
+                        techs: ['create-level-tech1'],
+                        'default': true
+                    };
+
+                    return testEntityHelper([{ block: 'b' }], null, ['tech1', 'tech2'], opts, [
+                        { name: path.join(level, 'b', 'b.tech1') },
+                        { name: path.join(level, 'b', 'b.tech2') },
+                        { name: path.join(level, 'b', 'b.create-level-tech1') }
+                    ]);
+                });
+
                 it('should respect level templates', () => {
                     const createLevels = {};
                     const opts = {
@@ -344,10 +378,10 @@ describe('bem-tools-create', () => {
                     };
 
                     const level = path.join(tmpDir, 'level1');
-                    opts.defaults.levels[level] = { 'default': true };
 
                     createLevels[level] = {
-                        templates: { css: path.join(__dirname, 'tech-templates', 'css2') }
+                        templates: { css: path.join(__dirname, 'tech-templates', 'css2') },
+                        'default': true
                     };
 
                     return testEntityHelper([{ block: 'b' }], null, ['css'], opts, [
@@ -359,11 +393,9 @@ describe('bem-tools-create', () => {
                 });
 
                 it('should support glob with absolute level path', () => {
-                    const levels = {};
                     const createPluginLevels = {};
                     const opts = {
                         defaults: {
-                            levels,
                             modules: {
                                 'bem-tools': {
                                     plugins: {
@@ -380,8 +412,10 @@ describe('bem-tools-create', () => {
                     };
 
                     const level = path.join(tmpDir, '*.blocks');
-                    levels[level] = { 'default': true };
-                    createPluginLevels[level] = { techs: ['tech4', 'tech3'] };
+                    createPluginLevels[level] = {
+                        techs: ['tech4', 'tech3'],
+                        'default': true
+                    };
 
                     mkdirp.sync(path.join(tmpDir, 'common.blocks'));
                     mkdirp.sync(path.join(tmpDir, 'desktop.blocks'));
