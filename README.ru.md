@@ -332,7 +332,8 @@ module.exports = {
     levels: {
         level1: {
             // Смотри https://ru.bem.info/toolbox/sdk/bem-fs-scheme/
-            scheme: 'flat',
+            scheme: 'nested',
+            shemeOptions: 'react'
 
             // Смотри https://ru.bem.info/toolbox/sdk/bem-naming/#В-стиле-Гарри-Робертса
             naming: 'two-dashes'
