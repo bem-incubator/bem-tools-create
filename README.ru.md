@@ -333,7 +333,7 @@ module.exports = {
         level1: {
             // Смотри https://ru.bem.info/toolbox/sdk/bem-fs-scheme/
             scheme: 'nested',
-            shemeOptions: 'react'
+            schemeOptions: 'react'
 
             // Смотри https://ru.bem.info/toolbox/sdk/bem-naming/#В-стиле-Гарри-Робертса
             naming: 'two-dashes'
