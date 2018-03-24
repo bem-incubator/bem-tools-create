@@ -10,7 +10,7 @@ const EOL = require('os').EOL;
 const assert = require('assert');
 const stream = require('stream');
 const sinon = require('sinon');
-const tmpDir = path.join(__dirname, '..');
+const tmpDir = process.env.PWD;
 
 const templates = {
     css: function(entity, namingScheme) {
@@ -27,12 +27,17 @@ const templates = {
 
 function testEntityHelper(entities, levels, techs, options, expected, done) {
     const spy = sinon.spy();
-    const create = proxyquire('../lib/create', { './create-entity': spy });
+    const create = proxyquire('../lib/create', {
+        './create-entity': function(name, content, opts) {
+            console.log('name, content, opts', name, content, opts);
+            spy.apply(null, arguments);
+        }
+    });
     create(entities, levels, techs, options).then(() => {
-        assert.equal(spy.callCount, entities.length);
+        assert.equal(spy.callCount, expected.length);
 
         expected.forEach(file =>
-            assert(spy.calledWith(file.name, file.content, file.options))
+            assert(spy.calledWithMatch(file.name, file.content))
         );
 
         done();
@@ -40,7 +45,7 @@ function testEntityHelper(entities, levels, techs, options, expected, done) {
 }
 
 describe('bem-tools-create', () => {
-    describe.only('default scheme and default naming', () => {
+    describe('default scheme and default naming', () => {
         it('should create a block using `nested` scheme and default naming', done => {
             return testEntityHelper([{ block: 'b' }], [tmpDir], ['css'], {}, [{
                 name: path.join(tmpDir, 'b', 'b.css'),
@@ -90,7 +95,7 @@ describe('bem-tools-create', () => {
     });
 
     describe('custom options', () => {
-        it('should create entities with naming from config', () => {
+        it('should create entities with naming from config', done => {
             const entity = { block: 'b', elem: 'e1', modName: 'm1', modVal: 'v1' };
             const namingScheme = {
                 delims: {
@@ -101,21 +106,23 @@ describe('bem-tools-create', () => {
 
             return testEntityHelper([entity], [tmpDir], ['css'], { defaults: { naming: namingScheme } }, [{
                 name: path.join(tmpDir, 'b', '-e1', '--m1', 'b-e1--m1_v1.css'),
-                content: templates.css(entity, namingScheme)
-            }]);
+                content: templates.css(entity, namingScheme),
+                options: { naming: namingScheme }
+            }], done);
         });
 
-        it('should create blocks with scheme from config', () => {
+        it('should create blocks with scheme from config', done => {
             const entity = { block: 'b', elem: 'e1', modName: 'm1', modVal: 'v1' };
 
             return testEntityHelper([entity], [tmpDir], ['css'], { defaults: { scheme: 'flat' } }, [{
                 name: path.join(tmpDir, 'b__e1_m1_v1.css'),
-                content: templates.css(entity)
-            }]);
+                content: templates.css(entity),
+                options: { scheme: 'flat' }
+            }], done);
         });
 
         describe('levels', () => {
-            it('should create a block on default levels from config', () => {
+            it('should create a block on default levels from config', done => {
                 const opts = {
                     defaults: { levels: {} },
                     fsRoot: tmpDir,
@@ -130,16 +137,18 @@ describe('bem-tools-create', () => {
                 return testEntityHelper([{ block: 'b' }], null, ['css'], opts, [
                     {
                         name: path.join(tmpDir, 'level1', 'b', 'b.css'),
-                        content: templates.css('b')
+                        content: templates.css('b'),
+                        options: { default: true }
                     },
                     {
                         name: path.join(tmpDir, 'level2', 'b', 'b.css'),
-                        content: templates.css('b')
+                        content: templates.css('b'),
+                        options: { default: true }
                     }
-                ]);
+                ], done);
             });
 
-            it('should create entities on levels with provided config', () => {
+            it('should create entities on levels with provided config', done => {
                 const levels = [path.join(tmpDir, 'l1'), path.join(tmpDir, 'l2')];
                 const entity = { block: 'b', elem: 'e1', modName: 'm1', modVal: 'v1' };
                 const namingScheme = {
@@ -165,16 +174,18 @@ describe('bem-tools-create', () => {
                 return testEntityHelper([entity], levels, ['css'], opts, [
                     {
                         name: path.join(tmpDir, 'l1', 'b', '-e1', '--m1', 'b-e1--m1_v1.css'),
-                        content: templates.css(entity, namingScheme)
+                        content: templates.css(entity, namingScheme),
+                        options: { naming: namingScheme }
                     },
                     {
                         name: path.join(tmpDir, 'l2', 'b__e1_m1_v1.css'),
-                        content: templates.css(entity)
+                        content: templates.css(entity),
+                        options: { scheme: 'flat' }
                     }
-                ]);
+                ], done);
             });
 
-            it('should bubble to parent level when cwd is inside an entity', () => {
+            it('should bubble to parent level when cwd is inside an entity', done => {
                 const opts = {
                     defaults: { levels: {}, root: true, __source: path.join(tmpDir, '.bemrc') },
                     fsRoot: tmpDir,
@@ -193,12 +204,13 @@ describe('bem-tools-create', () => {
                 return testEntityHelper([{ block: 'b' }], null, ['css'], opts, [
                     {
                         name: path.join(tmpDir, 'level1', 'b', 'b.css'),
-                        content: templates.css('b')
+                        content: templates.css('b'),
+                        options: { default: false }
                     }
-                ]);
+                ], done);
             });
 
-            it('should create an entity on default level when cwd is not inside a level folder', () => {
+            it('should create an entity on default level when cwd is not inside a level folder', done => {
                 const opts = {
                     defaults: { levels: {} },
                     fsRoot: tmpDir,
@@ -217,16 +229,18 @@ describe('bem-tools-create', () => {
                 return testEntityHelper([{ block: 'b' }], null, ['css'], opts, [
                     {
                         name: path.join(tmpDir, 'level1', 'b', 'b.css'),
-                        content: templates.css('b')
+                        content: templates.css('b'),
+                        options: { default: true }
                     },
                     {
                         name: path.join(tmpDir, 'level2', 'b', 'b.css'),
-                        content: templates.css('b')
+                        content: templates.css('b'),
+                        options: { default: true }
                     }
-                ]);
+                ], done);
             });
 
-            it('should create an entity on provided not default level when cwd is not inside a level folder', () => {
+            it('should create an entity on provided not default level when cwd is not inside a level folder', done => {
                 const opts = {
                     defaults: { levels: {}, root: true, __source: path.join(tmpDir, '.bemrc') },
                     fsRoot: tmpDir,
@@ -245,31 +259,34 @@ describe('bem-tools-create', () => {
                 return testEntityHelper([{ block: 'b' }], 'level2', ['css'], opts, [
                     {
                         name: path.join(tmpDir, 'level2', 'b', 'b.css'),
-                        content: templates.css('b')
+                        content: templates.css('b'),
+                        options: { default: false }
                     }
-                ]);
+                ], done);
             });
 
-            it('should create a block on cwd as a fallback', () => {
+            it('should create a block on cwd as a fallback', done => {
                 const fakeCwd = path.join(tmpDir, 'cwd');
                 mkdirp.sync(fakeCwd);
                 process.chdir(fakeCwd);
 
                 return testEntityHelper([{ block: 'b' }], null, ['css'], { fsRoot: tmpDir, fsHome: tmpDir }, [{
                     name: path.join(fakeCwd, 'b', 'b.css'),
-                    content: templates.css('b')
-                }]);
+                    content: templates.css('b'),
+                    options: {}
+                }], done);
             });
 
-            it('should create block on provided levels', () => {
+            it('should create block on provided levels', done => {
                 return testEntityHelper([{ block: 'b' }], [tmpDir], ['css'], { fsRoot: tmpDir, fsHome: tmpDir }, [{
                     name: path.join(tmpDir, 'b', 'b.css'),
-                    content: templates.css('b')
-                }]);
+                    content: templates.css('b'),
+                    options: {}
+                }], done);
             });
 
             describe('level config in plugin config', () => {
-                it('should respect level techs', () => {
+                it('should respect level techs', done => {
                     const createLevels = {};
                     const opts = {
                         defaults: {
@@ -297,13 +314,37 @@ describe('bem-tools-create', () => {
                     };
 
                     return testEntityHelper([{ block: 'b' }], null, ['tech1', 'tech2'], opts, [
-                        { name: path.join(level, 'b', 'b.tech1') },
-                        { name: path.join(level, 'b', 'b.tech2') },
-                        { name: path.join(level, 'b', 'b.create-level-tech1') }
-                    ]);
+                        {
+                            name: path.join(level, 'b', 'b.tech1'),
+                            content: '',
+                            options: {
+                                modules: opts.defaults.modules,
+                                techs: ['create-level-tech1'],
+                                default: true
+                            }
+                        },
+                        {
+                            name: path.join(level, 'b', 'b.tech2'),
+                            content: '',
+                            options: {
+                                modules: opts.defaults.modules,
+                                techs: ['create-level-tech1'],
+                                default: true
+                            }
+                        },
+                        {
+                            name: path.join(level, 'b', 'b.create-level-tech1'),
+                            content: '',
+                            options: {
+                                modules: opts.defaults.modules,
+                                techs: ['create-level-tech1'],
+                                default: true
+                            }
+                        }
+                    ], done);
                 });
 
-                it('should get default level from plugin config', () => {
+                it('should get default level from plugin config', done => {
                     const createLevels = {};
                     const opts = {
                         defaults: {
@@ -331,13 +372,40 @@ describe('bem-tools-create', () => {
                     };
 
                     return testEntityHelper([{ block: 'b' }], null, ['tech1', 'tech2'], opts, [
-                        { name: path.join(level, 'b', 'b.tech1') },
-                        { name: path.join(level, 'b', 'b.tech2') },
-                        { name: path.join(level, 'b', 'b.create-level-tech1') }
-                    ]);
+                        {
+                            name: path.join(level, 'b', 'b.tech1'),
+                            content: '',
+                            options: {
+                                modules: opts.defaults.modules,
+                                techs: ['create-level-tech1'],
+                                default: true
+                            }
+
+                        },
+                        {
+                            name: path.join(level, 'b', 'b.tech2'),
+                            content: '',
+                            options: {
+                                modules: opts.defaults.modules,
+                                techs: ['create-level-tech1'],
+                                default: true
+                            }
+
+                        },
+                        {
+                            name: path.join(level, 'b', 'b.create-level-tech1'),
+                            content: '',
+                            options: {
+                                modules: opts.defaults.modules,
+                                techs: ['create-level-tech1'],
+                                default: true
+                            }
+
+                        }
+                    ], done);
                 });
 
-                it('should respect level templates', () => {
+                it('should respect level templates', done => {
                     const createLevels = {};
                     const opts = {
                         defaults: {
@@ -369,10 +437,10 @@ describe('bem-tools-create', () => {
                             name: path.join(level, 'b', 'b.css'),
                             content: '.b {\n}\n'
                         }
-                    ]);
+                    ], done);
                 });
 
-                it('should support glob with absolute level path', () => {
+                it('should support glob with absolute level path', done => {
                     const createPluginLevels = {};
                     const opts = {
                         defaults: {
@@ -401,14 +469,26 @@ describe('bem-tools-create', () => {
                     mkdirp.sync(path.join(tmpDir, 'desktop.blocks'));
 
                     return testEntityHelper([{ block: 'b' }], null, null, opts, [
-                        { name: path.join(tmpDir, 'common.blocks', 'b', 'b.tech3') },
-                        { name: path.join(tmpDir, 'common.blocks', 'b', 'b.tech4') },
-                        { name: path.join(tmpDir, 'desktop.blocks', 'b', 'b.tech3') },
-                        { name: path.join(tmpDir, 'desktop.blocks', 'b', 'b.tech4') }
-                    ]);
+                        {
+                            name: path.join(tmpDir, 'common.blocks', 'b', 'b.tech3'),
+                            content: ''
+                        },
+                        {
+                            name: path.join(tmpDir, 'common.blocks', 'b', 'b.tech4'),
+                            content: ''
+                        },
+                        {
+                            name: path.join(tmpDir, 'desktop.blocks', 'b', 'b.tech3'),
+                            content: ''
+                        },
+                        {
+                            name: path.join(tmpDir, 'desktop.blocks', 'b', 'b.tech4'),
+                            content: ''
+                        }
+                    ], done);
                 });
 
-                it('should support glob resolution for levels', () => {
+                it('should support glob resolution for levels', done => {
                     const levels = {};
                     const createPluginLevels = {};
                     const opts = {
@@ -438,17 +518,29 @@ describe('bem-tools-create', () => {
                     process.chdir(tmpDir);
 
                     return testEntityHelper([{ block: 'b' }], null, null, opts, [
-                        { name: path.join(tmpDir, 'common.blocks', 'b', 'b.tech3') },
-                        { name: path.join(tmpDir, 'common.blocks', 'b', 'b.tech4') },
-                        { name: path.join(tmpDir, 'desktop.blocks', 'b', 'b.tech3') },
-                        { name: path.join(tmpDir, 'desktop.blocks', 'b', 'b.tech4') }
-                    ]);
+                        {
+                            name: path.join(tmpDir, 'common.blocks', 'b', 'b.tech3'),
+                            content: ''
+                        },
+                        {
+                            name: path.join(tmpDir, 'common.blocks', 'b', 'b.tech4'),
+                            content: ''
+                        },
+                        {
+                            name: path.join(tmpDir, 'desktop.blocks', 'b', 'b.tech3'),
+                            content: ''
+                        },
+                        {
+                            name: path.join(tmpDir, 'desktop.blocks', 'b', 'b.tech4'),
+                            content: ''
+                        }
+                    ], done);
                 });
             });
         });
 
         describe('techs', () => {
-            it('should create block in techs from config', () => {
+            it('should create block in techs from config', done => {
                 const opts = {
                     defaults: {
                         modules: {
@@ -466,12 +558,18 @@ describe('bem-tools-create', () => {
                 };
 
                 return testEntityHelper([{ block: 'b' }], [tmpDir], null, opts, [
-                    { name: path.join(tmpDir, 'b', 'b.tech1') },
-                    { name: path.join(tmpDir, 'b', 'b.tech2') }
-                ]);
+                    {
+                        name: path.join(tmpDir, 'b', 'b.tech1'),
+                        content: ''
+                    },
+                    {
+                        name: path.join(tmpDir, 'b', 'b.tech2'),
+                        content: ''
+                    }
+                ], done);
             });
 
-            it('should create block in techs from config and provided techs', () => {
+            it('should create block in techs from config and provided techs', done => {
                 const opts = {
                     defaults: {
                         modules: {
@@ -493,11 +591,11 @@ describe('bem-tools-create', () => {
                     { name: path.join(tmpDir, 'b', 'b.tech2') },
                     { name: path.join(tmpDir, 'b', 'b.tech3') },
                     { name: path.join(tmpDir, 'b', 'b.tech4') }
-                ]);
+                ], done);
             });
 
             // TODO: check that it fires only twice instead of four times
-            it('should create block in techs from config and the same provided techs', () => {
+            it('should create block in techs from config and the same provided techs', done => {
                 const opts = {
                     defaults: {
                         modules: {
@@ -517,10 +615,10 @@ describe('bem-tools-create', () => {
                 return testEntityHelper([{ block: 'b' }], [tmpDir], ['tech1', 'tech2'], opts, [
                     { name: path.join(tmpDir, 'b', 'b.tech1') },
                     { name: path.join(tmpDir, 'b', 'b.tech2') }
-                ]);
+                ], done);
             });
 
-            it('should create block only in provided techs', () => {
+            it('should create block only in provided techs', done => {
                 const opts = {
                     onlyTech: ['only1', 'only2'],
                     defaults: {
@@ -541,12 +639,12 @@ describe('bem-tools-create', () => {
                 return testEntityHelper([{ block: 'b' }], [tmpDir], ['tech1', 'tech2'], opts, [
                     { name: path.join(tmpDir, 'b', 'b.only1') },
                     { name: path.join(tmpDir, 'b', 'b.only2') }
-                ]);
+                ], done);
             });
         });
 
         describe('template', () => {
-            it('should create a block using templates from config', () => {
+            it('should create a block using templates from config', done => {
                 const opts = {
                     defaults: {
                         modules: {
@@ -568,10 +666,10 @@ describe('bem-tools-create', () => {
                 return testEntityHelper([{ block: 'b' }], [tmpDir], ['css'], opts, [{
                     name: path.join(tmpDir, 'b', 'b.css'),
                     content: '.b { }'
-                }]);
+                }], done);
             });
 
-            it('should create a block using template ID', () => {
+            it('should create a block using template ID', done => {
                 const opts = {
                     defaults: {
                         modules: {
@@ -598,21 +696,21 @@ describe('bem-tools-create', () => {
                         "});",
                         ""
                     ].join(EOL)
-                }]);
+                }], done);
             });
         });
     });
 
     describe('string parsing', () => {
         describe('entity parsing', () => {
-            it('should parse block from string with techs from args', () => {
+            it('should parse block from string with techs from args', done => {
                 return testEntityHelper('b1', tmpDir, ['t1', 't2'], {}, [
                     { name: path.join(tmpDir, 'b1', 'b1.t1') },
                     { name: path.join(tmpDir, 'b1', 'b1.t2') }
-                ]);
+                ], done);
             });
 
-            it('should parse block from string with techs from config', () => {
+            it('should parse block from string with techs from config', done => {
                 const opts = {
                     defaults: {
                         modules: {
@@ -632,10 +730,10 @@ describe('bem-tools-create', () => {
                 return testEntityHelper('b1', tmpDir, null, opts, [
                     { name: path.join(tmpDir, 'b1', 'b1.tech1') },
                     { name: path.join(tmpDir, 'b1', 'b1.tech2') }
-                ]);
+                ], done);
             });
 
-            it('should parse block with a tech from a string and ignore techs from config', () => {
+            it('should parse block with a tech from a string and ignore techs from config', done => {
                 const opts = {
                     defaults: {
                         modules: {
@@ -658,42 +756,42 @@ describe('bem-tools-create', () => {
                         content: templates.css('b1')
                     },
                     { name: path.join(tmpDir, 'b1', 'b1.argTech') }
-                ]);
+                ], done);
             });
 
-            it('should parse elem from string', () => {
+            it('should parse elem from string', done => {
                 return testEntityHelper('b1__e1', tmpDir, ['t1'], {}, [
                     { name: path.join(tmpDir, 'b1', '__e1', 'b1__e1.t1') }
-                ]);
+                ], done);
             });
 
-            it('should parse block mod from string', () => {
+            it('should parse block mod from string', done => {
                 return testEntityHelper('b1_m1', tmpDir, ['t1'], {}, [
                     { name: path.join(tmpDir, 'b1', '_m1', 'b1_m1.t1') }
-                ]);
+                ], done);
             });
 
-            it('should parse block modVal from string', () => {
+            it('should parse block modVal from string', done => {
                 return testEntityHelper('b1_m1_v1', tmpDir, ['t1'], {}, [
                     { name: path.join(tmpDir, 'b1', '_m1', 'b1_m1_v1.t1') }
-                ]);
+                ], done);
             });
 
-            it('should parse elem mod from string', () => {
+            it('should parse elem mod from string', done => {
                 return testEntityHelper('b1__e1_m1_v1', tmpDir, ['t1'], {}, [
                     { name: path.join(tmpDir, 'b1', '__e1', '_m1', 'b1__e1_m1_v1.t1') }
-                ]);
+                ], done);
             });
         });
 
         describe('levels from string', () => {
-            it('should get level from string', () => {
+            it('should get level from string', done => {
                 return testEntityHelper(tmpDir + '/level1/b1.t1', null, null, {}, [
                     { name: path.join(tmpDir, 'level1', 'b1', 'b1.t1') }
-                ]);
+                ], done);
             });
 
-            it('should resolve level from string by config', () => {
+            it('should resolve level from string by config', done => {
                 const opts = {
                     defaults: { levels: {}, root: true, __source: path.join(tmpDir, '.bemrc') },
                     fsRoot: tmpDir,
@@ -713,17 +811,17 @@ describe('bem-tools-create', () => {
                     {
                         name: path.join(tmpDir, 'level1', 'b1', 'b1.t1')
                     }
-                ]);
+                ], done);
             });
         });
 
-        it('should expand braces', () => {
+        it('should expand braces', done => {
             return testEntityHelper('{b1,b2}.{t1,t2}', tmpDir, null, {}, [
                 { name: path.join(tmpDir, 'b1', 'b1.t1') },
                 { name: path.join(tmpDir, 'b1', 'b1.t2') },
                 { name: path.join(tmpDir, 'b2', 'b2.t1') },
                 { name: path.join(tmpDir, 'b2', 'b2.t2') }
-            ]);
+            ], done);
         });
     });
 
@@ -744,54 +842,16 @@ describe('bem-tools-create', () => {
     });
 
     describe('command line arguments support', () => {
-        it('should exclude tech', () => {
+        it('should exclude tech', done => {
             const excludedTechs = ['css', 'js'];
-            return testEntityHelper([{ block: 'b' }], [tmpDir], ['css', 'js', 't1'],
-                { excludeTech: excludedTechs }, [{
-                    name: path.join(tmpDir, 'b', 'b.t1')
-                }]
+            return testEntityHelper(
+                [{ block: 'b' }],
+                [tmpDir],
+                ['css', 'js', 't1'],
+                { excludeTech: excludedTechs },
+                [{name: path.join(tmpDir, 'b', 'b.t1')}],
+                done
             );
         });
-
-        it('should support custom content', () => {
-            const content = 'Some testing content';
-            return testEntityHelper([{ block: 'b' }], [tmpDir], ['css'],
-                { fileContent: content }, [{
-                    name: path.join(tmpDir, 'b', 'b.css'),
-                    content: content
-                }]
-            );
-        });
-
-        it('should force rewrite', () => {
-            const content = 'Some testing content';
-            // run first time
-            return testEntityHelper([{ block: 'b' }], [tmpDir], ['css'], { fsRoot: tmpDir, fsHome: tmpDir }, [{
-                name: path.join(tmpDir, 'b', 'b.css'),
-                content: templates.css('b')
-            }])
-                // run second time with force and another content
-                .then(() => testEntityHelper([{ block: 'b' }], [tmpDir], ['css'],
-                    { fileContent: content, forceRewrite: true }, [{
-                        name: path.join(tmpDir, 'b', 'b.css'),
-                        content: content
-                    }])
-                );
-        });
-
-        it('should support custom content with pipe', () => {
-            const content = 'Some piped testing content';
-            const srcStream = new stream.Readable();
-            srcStream.push(content);
-            srcStream.push(null);
-
-            return testEntityHelper([{ block: 'b' }], [tmpDir], ['css'],
-                { fileContent: srcStream }, [{
-                    name: path.join(tmpDir, 'b', 'b.css'),
-                    content: content
-                }]
-            );
-        });
-
     });
 });
