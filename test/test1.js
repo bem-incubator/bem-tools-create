@@ -3,12 +3,13 @@
 const path = require('path');
 const mkdirp = require('mkdirp');
 const assert = require('assert');
-const prepareEntityData = require('../lib/prepare-entity-data');
+const getEntityData = require('../lib/get-entity-data');
+const getPath = require('../lib/get-path');
 const tmpDir = process.cwd();
 
 function testEntityHelper(entities, levels, techs, options, expected) {
-    const actualPaths = prepareEntityData(entities, levels, techs, options)
-        .map(item => item.path)
+    const actualPaths = getEntityData(entities, levels, techs, options)
+        .map(getPath)
         .sort();
     const expectdPaths = expected
         .map(item => item.path)

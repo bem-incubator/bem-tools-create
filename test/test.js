@@ -8,7 +8,6 @@ const create = require('..');
 const naming = require('@bem/naming');
 const EOL = require('os').EOL;
 const assert = require('assert');
-const stream = require('stream');
 
 const tmpDir = path.join(__dirname, 'tmp');
 const initialCwd = process.cwd();
@@ -798,20 +797,5 @@ describe('bem-tools-create', () => {
                     }])
                 );
         });
-
-        it('should support custom content with pipe', () => {
-            const content = 'Some piped testing content';
-            const srcStream = new stream.Readable();
-            srcStream.push(content);
-            srcStream.push(null);
-
-            return testEntityHelper([{ block: 'b' }], [tmpDir], ['css'],
-                { fileContent: srcStream }, [{
-                    name: path.join(tmpDir, 'b', 'b.css'),
-                    content: content
-                }]
-            );
-        });
-
     });
 });
