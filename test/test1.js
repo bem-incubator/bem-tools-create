@@ -1,5 +1,3 @@
-/* eslint no-shadow: ["error", { "allow": ["path"] }] */
-
 'use strict';
 
 const path = require('path');
@@ -10,10 +8,10 @@ const tmpDir = process.cwd();
 
 function testEntityHelper(entities, levels, techs, options, expected) {
     const actualPaths = prepareEntityData(entities, levels, techs, options)
-        .map(({ path }) => path)
+        .map(item => item.path)
         .sort();
     const expectdPaths = expected
-        .map(({ path }) => path)
+        .map(item => item.path)
         .sort();
 
     assert.deepEqual(actualPaths, expectdPaths);
