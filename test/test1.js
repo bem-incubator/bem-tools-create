@@ -782,7 +782,7 @@ describe('bem-tools-create', () => {
                 ['css', 'js', 't1'],
                 { excludeTech: excludedTechs },
                 [{
-                    path: '/Users/deemidroll/projects/bem-tools/bem-tools-create/b/b.t1'
+                    path: path.join(tmpDir, 'b', 'b.t1')
                 }]
             );
         });
