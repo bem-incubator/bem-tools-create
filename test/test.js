@@ -137,15 +137,15 @@ describe('bem-tools-create', () => {
         describe('levels', () => {
             it('should create a block on default levels from config', () => {
                 const opts = {
-                    defaults: { levels: {} },
+                    defaults: {
+                        levels: ['level1', 'level2'].map(lvl => ({
+                            path: path.join(tmpDir, lvl),
+                            'default': true
+                        }))
+                    },
                     fsRoot: tmpDir,
                     fsHome: tmpDir
                 };
-
-                ['level1', 'level2'].forEach(function(lvl) {
-                    const level = path.join(tmpDir, lvl);
-                    opts.defaults.levels[level] = { 'default': true };
-                });
 
                 return testEntityHelper([{ block: 'b' }], null, ['css'], opts, [
                     {
@@ -170,16 +170,17 @@ describe('bem-tools-create', () => {
                 };
                 const opts = {
                     defaults: {
-                        levels: {}
+                        levels: [
+                            {
+                                path: levels[0],
+                                naming: namingScheme
+                            },
+                            {
+                                path: levels[1],
+                                scheme: 'flat'
+                            }
+                        ]
                     }
-                };
-
-                opts.defaults.levels[levels[0]] = {
-                    naming: namingScheme
-                };
-
-                opts.defaults.levels[levels[1]] = {
-                    scheme: 'flat'
                 };
 
                 return testEntityHelper([entity], levels, ['css'], opts, [
@@ -196,15 +197,17 @@ describe('bem-tools-create', () => {
 
             it('should bubble to parent level when cwd is inside an entity', () => {
                 const opts = {
-                    defaults: { levels: {}, root: true, __source: path.join(tmpDir, '.bemrc') },
+                    defaults: {
+                        levels: ['level1', 'level2'].map(lvl => ({
+                            path: path.join(tmpDir, lvl),
+                            'default': lvl === 'level2'
+                        })),
+                        root: true,
+                        __source: path.join(tmpDir, '.bemrc')
+                    },
                     fsRoot: tmpDir,
                     fsHome: tmpDir
                 };
-
-                ['level1', 'level2'].forEach(function(lvl) {
-                    const level = path.join(tmpDir, lvl);
-                    opts.defaults.levels[level] = { 'default': lvl === 'level2' };
-                });
 
                 const fakeCwd = path.join(tmpDir, 'level1', 'b1', '__e1');
                 mkdirp.sync(fakeCwd);
@@ -220,15 +223,15 @@ describe('bem-tools-create', () => {
 
             it('should create an entity on default level when cwd is not inside a level folder', () => {
                 const opts = {
-                    defaults: { levels: {} },
+                    defaults: {
+                        levels: ['level1', 'level2'].map(lvl => ({
+                            path: path.join(tmpDir, lvl),
+                            'default': true
+                        }))
+                    },
                     fsRoot: tmpDir,
                     fsHome: tmpDir
                 };
-
-                ['level1', 'level2'].forEach(function(lvl) {
-                    const level = path.join(tmpDir, lvl);
-                    opts.defaults.levels[level] = { 'default': true };
-                });
 
                 const fakeCwd = path.join(tmpDir, 'some-folder', 'cwd');
                 mkdirp.sync(fakeCwd);
@@ -248,7 +251,7 @@ describe('bem-tools-create', () => {
 
             it('should create an entity on provided not default level when cwd is not inside a level folder', () => {
                 const opts = {
-                    defaults: { levels: {}, root: true, __source: path.join(tmpDir, '.bemrc') },
+                    defaults: { levels: [], root: true, __source: path.join(tmpDir, '.bemrc') },
                     fsRoot: tmpDir,
                     fsHome: tmpDir
                 };
@@ -291,9 +294,10 @@ describe('bem-tools-create', () => {
             describe('level config in plugin config', () => {
                 it('should respect level techs', () => {
                     const createLevels = {};
+                    const level = path.join(tmpDir, 'level1');
                     const opts = {
                         defaults: {
-                            levels: {},
+                            levels: [{ path: level }],
                             modules: {
                                 'bem-tools': {
                                     plugins: {
@@ -309,11 +313,9 @@ describe('bem-tools-create', () => {
                         fsHome: tmpDir
                     };
 
-                    const level = path.join(tmpDir, 'level1');
-                    opts.defaults.levels[level] = { 'default': true };
-
                     createLevels[level] = {
-                        techs: ['create-level-tech1']
+                        techs: ['create-level-tech1'],
+                        'default': true
                     };
 
                     return testEntityHelper([{ block: 'b' }], null, ['tech1', 'tech2'], opts, [
@@ -327,7 +329,7 @@ describe('bem-tools-create', () => {
                     const createLevels = {};
                     const opts = {
                         defaults: {
-                            levels: {},
+                            levels: [],
                             modules: {
                                 'bem-tools': {
                                     plugins: {
@@ -361,7 +363,7 @@ describe('bem-tools-create', () => {
                     const createLevels = {};
                     const opts = {
                         defaults: {
-                            levels: {},
+                            levels: [],
                             modules: {
                                 'bem-tools': {
                                     plugins: {
@@ -429,7 +431,8 @@ describe('bem-tools-create', () => {
                 });
 
                 it('should support glob resolution for levels', () => {
-                    const levels = {};
+                    const level = '*.blocks';
+                    const levels = [{ path: level }];
                     const createPluginLevels = {};
                     const opts = {
                         defaults: {
@@ -449,9 +452,10 @@ describe('bem-tools-create', () => {
                         fsHome: tmpDir
                     };
 
-                    const level = '*.blocks';
-                    levels[level] = { 'default': true };
-                    createPluginLevels[level] = { techs: ['tech4', 'tech3'] };
+                    createPluginLevels[level] = {
+                        techs: ['tech4', 'tech3'],
+                        'default': true
+                    };
 
                     mkdirp.sync(path.join(tmpDir, 'common.blocks'));
                     mkdirp.sync(path.join(tmpDir, 'desktop.blocks'));
@@ -715,7 +719,7 @@ describe('bem-tools-create', () => {
 
             it('should resolve level from string by config', () => {
                 const opts = {
-                    defaults: { levels: {}, root: true, __source: path.join(tmpDir, '.bemrc') },
+                    defaults: { levels: [], root: true, __source: path.join(tmpDir, '.bemrc') },
                     fsRoot: tmpDir,
                     fsHome: tmpDir
                 };
