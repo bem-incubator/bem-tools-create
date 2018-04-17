@@ -295,10 +295,10 @@ create(
 module.exports = {
     root: true,
 
-    levels: {
-        blocks: {},
-        bundles: {},
-    },
+    levels: [
+        { path: 'blocks' },
+        { path: 'bundles' }
+    ],
 
     modules: {
         'bem-tools': {
@@ -329,8 +329,9 @@ module.exports = {
 module.exports = {
     root: true,
 
-    levels: {
-        level1: {
+    levels: [
+        {
+            path: 'level1',
             // Смотри https://ru.bem.info/toolbox/sdk/bem-fs-scheme/
             scheme: 'nested',
             schemeOptions: 'react'
@@ -339,14 +340,16 @@ module.exports = {
             naming: 'two-dashes'
         },
 
-        level2: {
+        {
+            path: 'level2'
             // Для уровня используются настройки по умолчанию.
             //
             // Задаём его в файле конфигурации для возможности создавать
             // в нём блоки, указывая краткое имя уровня (`level2`)
         },
 
-        'path/to/level2': {
+        {
+            path: 'path/to/level2',
             // Значение по умолчанию, можно не указывать
             scheme: 'nested',
 
@@ -359,7 +362,7 @@ module.exports = {
                 wordPattern: '[a-zA-Z0-9]+'
             }
         }
-    },
+    ],
 
     modules: {
         'bem-tools': {
@@ -419,8 +422,9 @@ module.exports = {
 
 ```js
 module.exports = {
-    levels: {
-        level1: {
+    levels: [
+        {
+            path: 'level1',
             // Смотри https://ru.bem.info/toolbox/sdk/bem-fs-scheme/
             scheme: 'flat',
 
@@ -428,14 +432,16 @@ module.exports = {
             naming: 'two-dashes'
         },
 
-        level2: {
+        {
+            path: 'level2'
             // Для уровня используются настройки по умолчанию.
             //
             // Задаём его в файле конфигурации для возможности создавать
             // в нём блоки, указывая краткое имя уровня (`level2`)
         },
 
-        'path/to/level2': {
+        {
+            path: 'path/to/level2',
             // Значение по умолчанию, можно не указывать
             scheme: 'nested',
 
@@ -448,7 +454,7 @@ module.exports = {
                 wordPattern: '[a-zA-Z0-9]+'
             }
         }
-    }
+    ]
 }
 ```
 

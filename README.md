@@ -201,22 +201,25 @@ create([
 ```
 
 ### Configuration
-Use [bem-config](https://github.com/bem-sdk/bem-config/) to set up `bem-tools-create` behaviour.
+Use [bem-config](https://github.com/bem/bem-sdk/tree/master/packages/config#config) to set up `bem-tools-create` behaviour.
 
 ```js
 {
     "root": true,
-    "levels": {
-        "level1": {
+    "levels": [
+        {
+            "path": "level1",
             "scheme": "nested"
         },
-        "level2": {
+        {
+            "path": "level2",
             "scheme": "nested"
         },
-        "path/to/level3": {
+        {
+            "path": "path/to/level3",
             "scheme": "nested"
         }
-    },
+    ],
     "modules": {
         "bem-tools": {
             "plugins": {
