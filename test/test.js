@@ -5,7 +5,8 @@ const path = require('path');
 const mkdirp = require('mkdirp');
 const rimraf = require('rimraf');
 const create = require('..');
-const naming = require('@bem/naming');
+const namingStringify = require('@bem/sdk.naming.entity.stringify');
+const namingPresets = require('@bem/sdk.naming.presets');
 const EOL = require('os').EOL;
 const assert = require('assert');
 const stream = require('stream');
@@ -15,7 +16,9 @@ const initialCwd = process.cwd();
 
 const templates = {
     css: function(entity, namingScheme) {
-        const className = typeof entity === 'string' ? entity : naming(namingScheme).stringify(entity);
+        const className = typeof entity === 'string' ?
+            entity :
+            namingStringify(namingScheme || namingPresets.origin)(entity);
 
         return [
             '.' + className + ' {',
@@ -62,8 +65,8 @@ describe('bem-tools-create', () => {
     beforeEach(() => mkdirp.sync(tmpDir));
 
     afterEach(() => {
-        rimraf.sync(tmpDir);
         process.chdir(initialCwd);
+        rimraf.sync(tmpDir);
     });
 
     describe('default scheme and default naming', () => {
@@ -82,14 +85,14 @@ describe('bem-tools-create', () => {
         });
 
         it('should create an block modifier using `nested` scheme and default naming', () => {
-            return testEntityHelper([{ block: 'b', modName: 'm', modVal: 'v' }], [tmpDir], ['css'], {}, [{
+            return testEntityHelper([{ block: 'b', mod: { name: 'm', val: 'v' } }], [tmpDir], ['css'], {}, [{
                 name: path.join(tmpDir, 'b', '_m', 'b_m_v.css'),
                 content: templates.css('b_m_v')
             }]);
         });
 
         it('should create an element modifier using `nested` scheme and default naming', () => {
-            return testEntityHelper([{ block: 'b', elem: 'e', modName: 'em', modVal: 'ev' }], [tmpDir], ['css'], {}, [{
+            return testEntityHelper([{ block: 'b', elem: 'e', mod: { name: 'em', val: 'ev' } }], [tmpDir], ['css'], {}, [{
                 name: path.join(tmpDir, 'b', '__e', '_em', 'b__e_em_ev.css'),
                 content: templates.css('b__e_em_ev')
             }]);
@@ -111,7 +114,7 @@ describe('bem-tools-create', () => {
 
     describe('custom options', () => {
         it('should create entities with naming from config', () => {
-            const entity = { block: 'b', elem: 'e1', modName: 'm1', modVal: 'v1' };
+            const entity = { block: 'b', elem: 'e1', mod: { name: 'm1', val: 'v1' } };
             const namingScheme = {
                 delims: {
                     elem: '-',
@@ -126,9 +129,9 @@ describe('bem-tools-create', () => {
         });
 
         it('should create blocks with scheme from config', () => {
-            const entity = { block: 'b', elem: 'e1', modName: 'm1', modVal: 'v1' };
+            const entity = { block: 'b', elem: 'e1', mod: { name: 'm1', val: 'v1' } };
 
-            return testEntityHelper([entity], [tmpDir], ['css'], { defaults: { scheme: 'flat' } }, [{
+            return testEntityHelper([entity], [tmpDir], ['css'], { defaults: { naming: { fs: { scheme: 'flat' } } } }, [{
                 name: path.join(tmpDir, 'b__e1_m1_v1.css'),
                 content: templates.css(entity)
             }]);
@@ -161,7 +164,7 @@ describe('bem-tools-create', () => {
 
             it('should create entities on levels with provided config', () => {
                 const levels = [path.join(tmpDir, 'l1'), path.join(tmpDir, 'l2')];
-                const entity = { block: 'b', elem: 'e1', modName: 'm1', modVal: 'v1' };
+                const entity = { block: 'b', elem: 'e1', mod: { name: 'm1', val: 'v1' } };
                 const namingScheme = {
                     delims: {
                         elem: '-',
@@ -177,7 +180,11 @@ describe('bem-tools-create', () => {
                             },
                             {
                                 path: levels[1],
-                                scheme: 'flat'
+                                naming: {
+                                    fs: {
+                                        scheme: 'flat'
+                                    }
+                                }
                             }
                         ]
                     }

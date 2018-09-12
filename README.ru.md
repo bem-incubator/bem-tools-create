@@ -332,11 +332,8 @@ module.exports = {
     levels: [
         {
             path: 'level1',
-            // Смотри https://ru.bem.info/toolbox/sdk/bem-fs-scheme/
-            scheme: 'nested',
-            schemeOptions: 'react'
 
-            // Смотри https://ru.bem.info/toolbox/sdk/bem-naming/#В-стиле-Гарри-Робертса
+            // Смотри https://github.com/bem/bem-sdk/tree/master/packages/naming.presets
             naming: 'two-dashes'
         },
 
@@ -350,14 +347,18 @@ module.exports = {
 
         {
             path: 'path/to/level2',
-            // Значение по умолчанию, можно не указывать
-            scheme: 'nested',
 
             // Смотри https://ru.bem.info/toolbox/sdk/bem-naming/#Собственный-стиль
             naming: {
                 delims: {
                     elem: '-',
                     mod: { name: '--', val: '_' }
+                },
+                // Значение по умолчанию, можно не указывать
+                fs: {
+                    delims: { elem: '__', mod: '_' },
+                    pattern: '${layer?${layer}.}blocks/${entity}.${tech}',
+                    scheme: 'nested'
                 },
                 wordPattern: '[a-zA-Z0-9]+'
             }
@@ -417,16 +418,14 @@ module.exports = {
 В корне конфигурационного файла можно задать
 [схему именования](https://ru.bem.info/toolbox/sdk/bem-naming/) БЭМ-сущностей
 (см. [соглашение по именованию](https://ru.bem.info/methodology/naming-convention/#Соглашение-по-именованию-css-селекторов)) и
-[схему файловой структруры](https://ru.bem.info/toolbox/sdk/bem-fs-scheme/)
-(значение по умолчанию `nested`).
+[схему файловой структруры](https://github.com/bem/bem-sdk/tree/master/packages/naming.cell.stringify)
+(значение по умолчанию `fs: { delims: { elem: '__', mod: '_' }, pattern: '${layer?${layer}.}blocks/${entity}.${tech}', scheme: 'nested' }`).
 
 ```js
 module.exports = {
     levels: [
         {
             path: 'level1',
-            // Смотри https://ru.bem.info/toolbox/sdk/bem-fs-scheme/
-            scheme: 'flat',
 
             // Смотри https://ru.bem.info/toolbox/sdk/bem-naming/#В-стиле-Гарри-Робертса
             naming: 'two-dashes'
@@ -442,8 +441,6 @@ module.exports = {
 
         {
             path: 'path/to/level2',
-            // Значение по умолчанию, можно не указывать
-            scheme: 'nested',
 
             // Смотри https://ru.bem.info/toolbox/sdk/bem-naming/#Собственный-стиль
             naming: {

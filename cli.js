@@ -4,6 +4,7 @@ var create = require('./');
 
 function noOp() {}
 
+/* eslint indent: "off" */
 module.exports = function() {
     this
         .title('Create BEM entity').helpful()
